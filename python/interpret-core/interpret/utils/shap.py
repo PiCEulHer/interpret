@@ -4,6 +4,7 @@
 from ..api.templates import FeatureValueExplanation
 from . import gen_name_from_class, unify_data, gen_perf_dicts, gen_local_selector
 
+import numpy as np
 from ..glassbox.ebm.bin import unify_data2
 
 def shap_explain_local(explainer, X, y=None, name=None, is_classification=False, check_additivity=True):

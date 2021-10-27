@@ -6,6 +6,7 @@ from ..api.base import ExplainerMixin
 from ..utils import unify_predict_fn, unify_data
 import warnings
 
+import numpy as np
 from ..glassbox.ebm.bin import unify_data2
 
 class ShapKernel(ExplainerMixin):

@@ -9,6 +9,7 @@ from ..utils import gen_perf_dicts
 from ..utils import unify_data, unify_predict_fn
 import warnings
 
+import numpy as np
 from ..glassbox.ebm.bin import unify_data2
 
 

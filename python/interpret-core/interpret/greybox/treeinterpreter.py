@@ -7,6 +7,7 @@ from ..utils import gen_name_from_class, unify_data, gen_perf_dicts, gen_local_s
 
 from sklearn.base import is_classifier
 
+import numpy as np
 from ..glassbox.ebm.bin import unify_data2
 
 # TODO: Remove pragma when tree interpreter updates.

@@ -13,6 +13,8 @@ import re
 
 import logging
 
+from ..glassbox.ebm.bin import unify_data2
+
 log = logging.getLogger(__name__)
 
 
@@ -139,9 +141,55 @@ class DecisionListClassifier(ClassifierMixin, ExplainerMixin):
             sys.modules['sklearn.externals.six'] = six
             from skrules import SkopeRules as SR
 
+
+        X0 = X
+        y0 = y
+        w0 = None
+        feature_types0 = self.feature_types
+        feature_names0 = self.feature_names
+
+
         X, y, self.feature_names, self.feature_types = unify_data(
             X, y, self.feature_names, self.feature_types
         )
+
+
+        X1 = X
+        y1 = y
+        w1 = None
+        feature_types1 = self.feature_types
+        feature_names1 = self.feature_names
+        are_classifier = None if y0 is None else not issubclass(y0.dtype.type, np.floating)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
         self.feature_index_ = [
             "feature_" + str(i) for i, v in enumerate(self.feature_names)
         ]
@@ -179,7 +227,48 @@ class DecisionListClassifier(ClassifierMixin, ExplainerMixin):
             Predicted class label per instance.
         """
 
-        X, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types)
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.feature_types
+        feature_names0 = self.feature_names
+
+
+        X, _, feature_names1, feature_types1 = unify_data(X, None, self.feature_names, self.feature_types)
+
+        X1 = X
+        y1 = None
+        w1 = None
+        are_classifier = None
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
         scores = self.predict_proba(X)
         return self.classes_[np.argmax(scores, axis=1)]
 
@@ -206,7 +295,48 @@ class DecisionListClassifier(ClassifierMixin, ExplainerMixin):
             Probability estimate of instance for each class.
         """
 
-        X, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types)
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.feature_types
+        feature_names0 = self.feature_names
+
+        X, _, feature_names1, feature_types1 = unify_data(X, None, self.feature_names, self.feature_types)
+
+        X1 = X
+        y1 = None
+        w1 = None
+        are_classifier = None
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
         scores = self._scores(X)
         prec_ar = np.array(self.prec_)
         return np.c_[1.0 - prec_ar[scores], prec_ar[scores]]
@@ -271,7 +401,49 @@ class DecisionListClassifier(ClassifierMixin, ExplainerMixin):
         if name is None:
             name = gen_name_from_class(self)
 
-        X, y, _, _ = unify_data(X, y, self.feature_names, self.feature_types)
+
+        X0 = X
+        y0 = y
+        w0 = None
+        feature_types0 = self.feature_types
+        feature_names0 = self.feature_names
+
+        X, y, feature_names1, feature_types1 = unify_data(X, y, self.feature_names, self.feature_types)
+
+
+        X1 = X
+        y1 = y
+        w1 = None
+        are_classifier = None if y0 is None else not issubclass(y0.dtype.type, np.floating)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
 
         scores = self._scores(X)
         outcomes = self.predict(X)

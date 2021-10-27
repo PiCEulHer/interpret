@@ -33,6 +33,8 @@ from sklearn.base import (
 )
 from itertools import combinations
 
+from .bin import unify_data2
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -810,6 +812,20 @@ class BaseEBM(BaseEstimator):
 
         # TODO: PK don't overwrite self.feature_names here (scikit-learn rules), and it's also confusing to
         #       user to have their fields overwritten.  Use feature_names_out_ or something similar
+
+
+
+
+        X0 = X
+        y0 = y
+        w0 = sample_weight
+        feature_types0 = self.feature_types
+        feature_names0 = self.feature_names
+
+
+
+
+
         X, y, self.feature_names, _ = unify_data(
             X, y, self.feature_names, self.feature_types, missing_data_allowed=False
         )
@@ -870,6 +886,60 @@ class BaseEBM(BaseEstimator):
         self.preprocessor_.fit(X)
         X_orig = X
         X = self.preprocessor_.transform(X_orig)
+
+
+
+
+
+
+
+
+        X1 = X_orig
+        y1 = y
+        w1 = w
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
+
+
+
+
+
+
+
+
+
 
         features_categorical = np.array([x == "categorical" for x in self.preprocessor_.col_types_], dtype=ct.c_int64)
         features_bin_count = np.array([len(x) for x in self.preprocessor_.col_bin_counts_], dtype=ct.c_int64)
@@ -1225,8 +1295,73 @@ class BaseEBM(BaseEstimator):
             Returns:
                 The sum of the additive term contributions.
         """
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
+
         check_is_fitted(self, "has_fitted_")
         X_orig, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+
+
+
+
+
+
+
+        X1 = X_orig
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types0)]
+        are_classifier = is_classifier(self)
+
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         X = self.preprocessor_.transform(X_orig)
         X = np.ascontiguousarray(X.T)
 
@@ -1401,12 +1536,60 @@ class BaseEBM(BaseEstimator):
 
         # Produce feature value pairs for each sample.
         # Values are the model graph score per respective feature group.
+
+        X0 = X
+        y0 = y
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         if name is None:
             name = gen_name_from_class(self)
 
         check_is_fitted(self, "has_fitted_")
 
         X, y, _, _ = unify_data(X, y, self.feature_names, self.feature_types, missing_data_allowed=False)
+
+
+
+        X1 = X
+        y1 = y
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
 
         # Transform y if classifier
         if is_classifier(self) and y is not None:
@@ -1623,8 +1806,55 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
         Returns:
             Probability estimate of sample for each class.
         """
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         check_is_fitted(self, "has_fitted_")
         X_orig, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+
+
+        X1 = X_orig
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
         X = self.preprocessor_.transform(X_orig)
         X = np.ascontiguousarray(X.T)
 
@@ -1650,8 +1880,54 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
         Returns:
             Predicted class label per sample.
         """
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         check_is_fitted(self, "has_fitted_")
         X_orig, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+
+
+        X1 = X_orig
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
         X = self.preprocessor_.transform(X_orig)
         X = np.ascontiguousarray(X.T)
 
@@ -1683,6 +1959,14 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
             Predictions and local explanations for each sample.
         """
 
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         allowed_outputs = ['probabilities', 'logits', 'labels']
         if output not in allowed_outputs:
             msg = "Argument 'output' has invalid value.  Got '{}', expected one of " 
@@ -1693,6 +1977,48 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
         X_orig, _, _, _ = unify_data(
             X, None, self.feature_names, self.feature_types, missing_data_allowed=False
         )
+
+
+
+
+        X1 = X_orig
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
+
         X = self.preprocessor_.transform(X_orig)
         X = np.ascontiguousarray(X.T)
 
@@ -1808,8 +2134,56 @@ class ExplainableBoostingRegressor(BaseEBM, RegressorMixin, ExplainerMixin):
         Returns:
             Predicted class label per sample.
         """
+
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         check_is_fitted(self, "has_fitted_")
         X_orig, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+
+
+        X1 = X_orig
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
         X = self.preprocessor_.transform(X_orig)
         X = np.ascontiguousarray(X.T)
 
@@ -1834,10 +2208,57 @@ class ExplainableBoostingRegressor(BaseEBM, RegressorMixin, ExplainerMixin):
             Predictions and local explanations for each sample.
         """
 
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
+
         check_is_fitted(self, "has_fitted_")
         X_orig, _, _, _ = unify_data(
             X, None, self.feature_names, self.feature_types, missing_data_allowed=False
         )
+
+
+        X1 = X_orig
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
+
         X = self.preprocessor_.transform(X_orig)
         X = np.ascontiguousarray(X.T)
 
@@ -1955,8 +2376,53 @@ class DPExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
         Returns:
             Probability estimate of sample for each class.
         """
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
         check_is_fitted(self, "has_fitted_")
         X, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types)
+
+
+        X1 = X
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
         X = self.preprocessor_.transform(X)
 
         # TODO PK add a test to see if we handle X.ndim == 1 (or should we throw ValueError)
@@ -1977,8 +2443,54 @@ class DPExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
         Returns:
             Predicted class label per sample.
         """
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         check_is_fitted(self, "has_fitted_")
         X, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types)
+
+
+        X1 = X
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
         X = self.preprocessor_.transform(X)
 
         # TODO PK add a test to see if we handle X.ndim == 1 (or should we throw ValueError)
@@ -2098,8 +2610,54 @@ class DPExplainableBoostingRegressor(BaseEBM, RegressorMixin, ExplainerMixin):
         Returns:
             Predicted class label per sample.
         """
+
+        X0 = X
+        y0 = None
+        w0 = None
+        feature_types0 = self.preprocessor_.col_types_
+        feature_names0 = self.feature_names[0:len(feature_types0)]
+
+
         check_is_fitted(self, "has_fitted_")
         X, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types)
+
+
+        X1 = X
+        y1 = None
+        w1 = None
+        feature_types1 = self.preprocessor_.col_types_
+        feature_names1 = self.feature_names[0:len(feature_types1)]
+        are_classifier = is_classifier(self)
+
+        if feature_types0 is not None:
+            feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
+        feature_types1 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types1]
+        X2, y2, w2, feature_names2, feature_types2 = unify_data2(are_classifier, X0, y0, w0, feature_names0, feature_types0)
+
+        if y1 is not None:
+            if not np.array_equal(y1, y2):
+                raise NotImplementedError("oh no EBM y!")
+
+        if w0 is not None:
+            if not np.array_equal(w1, w2):
+                raise NotImplementedError("oh no EBM w!")
+
+        if feature_names1 != feature_names2:
+            raise NotImplementedError("oh no EBM feature_names!")
+
+        if feature_types1 != feature_types2:
+            raise NotImplementedError("oh no EBM feature_types!")
+
+        X1 = X1.astype(np.object_)
+        for idx in range(len(feature_types1)):
+            if feature_types1[idx] == 'continuous':
+                X1[:, idx] = X1[:, idx].astype(np.float64).astype(np.object_)
+        X1 = X1.astype(np.unicode_)
+        X2 = X2.astype(np.unicode_)
+        if not np.array_equal(X1, X2):
+            raise NotImplementedError("oh no EBM X!")
+
+
         X = self.preprocessor_.transform(X)
 
         # TODO PK add a test to see if we handle X.ndim == 1 (or should we throw ValueError)

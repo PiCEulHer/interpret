@@ -1,6 +1,8 @@
 # Copyright (c) 2019 Microsoft Corporation
 # Distributed under the MIT software license
 
+import numpy as np
+
 from ..utils.shap import shap_explain_local
 from sklearn.base import is_classifier
 

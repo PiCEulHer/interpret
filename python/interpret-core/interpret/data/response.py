@@ -69,7 +69,7 @@ class Marginal(ExplainerMixin):
         w1 = None
         feature_types1 = self.feature_types
         feature_names1 = self.feature_names
-        are_classifier = None if y0 is None else not issubclass(y0.dtype.type, np.floating)
+        are_classifier = None if y0 is None else not issubclass(np.array(y0).dtype.type, np.floating)
 
         if feature_types0 is not None:
             feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
@@ -355,7 +355,7 @@ class ClassHistogram(ExplainerMixin):
         w1 = None
         feature_types1 = self.feature_types
         feature_names1 = self.feature_names
-        are_classifier = None if y0 is None else not issubclass(y0.dtype.type, np.floating)
+        are_classifier = None if y0 is None else not issubclass(np.array(y0).dtype.type, np.floating)
 
         if feature_types0 is not None:
             feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]

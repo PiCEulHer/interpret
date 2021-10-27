@@ -29,7 +29,7 @@ def test_ebm_train_test_split_regression():
     X1 = X
     y1 = y
     w1 = None
-    are_classifier = None if y0 is None else not issubclass(y0.dtype.type, np.floating)
+    are_classifier = None if y0 is None else not issubclass(np.array(y0).dtype.type, np.floating)
 
     if feature_types0 is not None:
         feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]
@@ -107,7 +107,7 @@ def test_ebm_train_test_split_classification():
     X1 = X
     y1 = y
     w1 = None
-    are_classifier = None if y0 is None else not issubclass(y0.dtype.type, np.floating)
+    are_classifier = None if y0 is None else not issubclass(np.array(y0).dtype.type, np.floating)
 
     if feature_types0 is not None:
         feature_types0 = ["nominal" if feature_type == "categorical" else feature_type for feature_type in feature_types0]

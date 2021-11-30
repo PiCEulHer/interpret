@@ -648,7 +648,7 @@ class BaseEBM(BaseEstimator):
         #       user to have their fields overwritten.  Use feature_names_in_ since 
         #       scikit-learn is using "feature_names_in_" in multiple estimators now
         X_unified, y, self.feature_names, _ = unify_data(
-            X, y, self.feature_names, self.feature_types, missing_data_allowed=False
+            X, y, self.feature_names, self.feature_types, missing_data_allowed=True
         )
 
         n_features = X_unified.shape[1]
@@ -1096,7 +1096,7 @@ class BaseEBM(BaseEstimator):
                 The sum of the additive term contributions.
         """
         check_is_fitted(self, "has_fitted_")
-        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=True)
         X_main = self.preprocessor_.transform(X_unified)
         X_main = np.ascontiguousarray(X_main.T)
 
@@ -1276,7 +1276,7 @@ class BaseEBM(BaseEstimator):
 
         check_is_fitted(self, "has_fitted_")
 
-        X_unified, y, _, _ = unify_data(X, y, self.feature_names, self.feature_types, missing_data_allowed=False)
+        X_unified, y, _, _ = unify_data(X, y, self.feature_names, self.feature_types, missing_data_allowed=True)
 
         # Transform y if classifier
         if is_classifier(self) and y is not None:
@@ -1489,7 +1489,7 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
             Probability estimate of sample for each class.
         """
         check_is_fitted(self, "has_fitted_")
-        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=True)
         X_main = self.preprocessor_.transform(X_unified)
         X_main = np.ascontiguousarray(X_main.T)
 
@@ -1514,7 +1514,7 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
             Predicted class label per sample.
         """
         check_is_fitted(self, "has_fitted_")
-        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=True)
         X_main = self.preprocessor_.transform(X_unified)
         X_main = np.ascontiguousarray(X_main.T)
 
@@ -1552,7 +1552,7 @@ class ExplainableBoostingClassifier(BaseEBM, ClassifierMixin, ExplainerMixin):
 
         check_is_fitted(self, "has_fitted_")
         X_unified, _, _, _ = unify_data(
-            X, None, self.feature_names, self.feature_types, missing_data_allowed=False
+            X, None, self.feature_names, self.feature_types, missing_data_allowed=True
         )
         X_main = self.preprocessor_.transform(X_unified)
         X_main = np.ascontiguousarray(X_main.T)
@@ -1670,7 +1670,7 @@ class ExplainableBoostingRegressor(BaseEBM, RegressorMixin, ExplainerMixin):
             Predicted class label per sample.
         """
         check_is_fitted(self, "has_fitted_")
-        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=False)
+        X_unified, _, _, _ = unify_data(X, None, self.feature_names, self.feature_types, missing_data_allowed=True)
         X_main = self.preprocessor_.transform(X_unified)
         X_main = np.ascontiguousarray(X_main.T)
 
@@ -1697,7 +1697,7 @@ class ExplainableBoostingRegressor(BaseEBM, RegressorMixin, ExplainerMixin):
 
         check_is_fitted(self, "has_fitted_")
         X_unified, _, _, _ = unify_data(
-            X, None, self.feature_names, self.feature_types, missing_data_allowed=False
+            X, None, self.feature_names, self.feature_types, missing_data_allowed=True
         )
         X_main = self.preprocessor_.transform(X_unified)
         X_main = np.ascontiguousarray(X_main.T)
